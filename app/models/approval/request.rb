@@ -20,7 +20,7 @@ module Approval
     validates :items,        presence: true
 
     validates_associated :comments
-    validates_associated :items
+    # validates_associated :items
 
     validate :ensure_state_was_pending
 

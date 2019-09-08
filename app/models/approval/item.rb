@@ -15,7 +15,7 @@ module Approval
     validates :event,         presence: true, inclusion: { in: EVENTS }
     validates :params,        presence: true, if: :update_event?
 
-    validate :ensure_resource_be_valid, if: ->(item) { item.create_event? || item.update_event? }
+    validate :ensure_resource_be_valid, if: ->(item) { (item.create_event? || item.update_event?) && self.do_not_validate_resource.blank? }
 
     EVENTS.each do |event_name|
       define_method "#{event_name}_event?" do
@@ -27,11 +27,20 @@ module Approval
       send("exec_#{event}")
     end
 
-    private
+    def update_without_validating_resource!(params)
+      self.do_not_validate_resource = true
+      res = update!(params)
+      self.do_not_validate_resource = false
+      res
+    end
 
+    protected
+    attr_accessor :do_not_validate_resource
+
+    private
       def exec_create
         resource_model.create!(params).tap do |created_resource|
-          update!(resource_id: created_resource.id)
+          update_without_validating_resource!(resource_id: created_resource.id)
         end
       end
 
