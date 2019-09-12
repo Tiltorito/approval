@@ -11,11 +11,11 @@ module Approval
     serialize :params, Hash
 
     validates :resource_type, presence: true
-    validates :resource_id,   presence: true, if: ->(item) { item.update_event? || item.destroy_event? }
+    validates :resource_id,   presence: true, if: :resource_id_presence_condition?
     validates :event,         presence: true, inclusion: { in: EVENTS }
     validates :params,        presence: true, if: :update_event?
 
-    validate :ensure_resource_be_valid, if: ->(item) { (item.create_event? || item.update_event?) && self.do_not_validate_resource.blank? }
+    validate :ensure_resource_be_valid, if: :ensure_valid_resource_condition?
 
     EVENTS.each do |event_name|
       define_method "#{event_name}_event?" do
@@ -64,6 +64,18 @@ module Approval
         else
           resource_model.perform
         end
+      end
+
+      def resource_id_presence_condition?
+        (update_event? || destroy_event?) && !destroy_event_perfomed?
+      end
+
+      def ensure_valid_resource_condition?
+        !destroy_event_perfomed? && (create_event? || update_event?) && do_not_validate_resource.blank? 
+      end
+
+      def destroy_event_perfomed?
+        destroy_event? && request.executed?
       end
 
       def resource_model
