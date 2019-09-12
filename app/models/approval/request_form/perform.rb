@@ -10,7 +10,7 @@ module Approval
               Array(records).each do |record|
                 request.items.new(
                   event: "perform",
-                  resource_type: record.class.to_s,
+                  resource_type: record.base_class.to_s,
                   params: extract_params_from(record),
                 )
               end

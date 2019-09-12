@@ -10,7 +10,7 @@ module Approval
               Array(records).each do |record|
                 request.items.new(
                   event: "destroy",
-                  resource_type: record.class.to_s,
+                  resource_type: record.class.base_class.to_s,
                   resource_id: record.id,
                 )
               end

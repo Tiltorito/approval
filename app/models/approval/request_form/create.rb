@@ -10,7 +10,7 @@ module Approval
               Array(records).each do |record|
                 request.items.new(
                   event: "create",
-                  resource_type: record.class.to_s,
+                  resource_type: record.class.base_class.to_s,
                   params: record.create_params_for_approval,
                 )
               end
