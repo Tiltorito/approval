@@ -3,8 +3,8 @@ module Approval
     extend ActiveSupport::Concern
 
     included do
-      has_many :approval_requests, class_name: :"Approval::Request", foreign_key: :request_user_id, dependent: :nullify
-      has_many :approval_comments, class_name: :"Approval::Comment", foreign_key: :user_id, dependent: :nullify
+      has_many :approval_requests, class_name: :"Approval::Request", foreign_key: :request_user_id
+      has_many :approval_comments, class_name: :"Approval::Comment", foreign_key: :user_id
     end
 
     def request_for_create(records, reason:)
