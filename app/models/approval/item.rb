@@ -25,6 +25,11 @@ module Approval
 
     def apply
       send("exec_#{event}")
+    end 
+
+    def params=(new_value)
+      new_value = new_value.try(:to_h)
+      self[:params].merge! new_value unless new_value.nil?
     end
 
     def update_without_validating_resource!(params)
