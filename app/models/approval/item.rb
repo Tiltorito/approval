@@ -1,9 +1,11 @@
 module Approval
   class Item < ApplicationRecord
     class UnexistResource < StandardError; end
-
+    
     self.table_name = :approval_items
     EVENTS = %w[create update destroy perform].freeze
+
+    after_destroy :destroy_request, if: ->(item) { item.request.items.count.zero? }
 
     belongs_to :request, class_name: :"Approval::Request", inverse_of: :items
     belongs_to :resource, polymorphic: true, optional: true
@@ -47,6 +49,10 @@ module Approval
         resource_model.create!(params).tap do |created_resource|
           update_without_validating_resource!(resource_id: created_resource.id)
         end
+      end
+
+      def destroy_request
+        request.destroy
       end
 
       def exec_update
