@@ -1,7 +1,7 @@
 module Approval
   class Item < ApplicationRecord
     class UnexistResource < StandardError; end
-    
+
     self.table_name = :approval_items
     EVENTS = %w[create update destroy perform].freeze
 
@@ -17,7 +17,7 @@ module Approval
     validates :event,         presence: true, inclusion: { in: EVENTS }
     validates :params,        presence: true, if: :update_event?
 
-    validate :ensure_resource_be_valid, if: :ensure_valid_resource_condition?
+    validate :ensure_resource_be_valid
 
     EVENTS.each do |event_name|
       define_method "#{event_name}_event?" do
@@ -27,27 +27,18 @@ module Approval
 
     def apply
       send("exec_#{event}")
-    end 
+    end
 
     def params=(new_value)
       new_value = new_value.try(:to_h)
       self[:params].merge! new_value unless new_value.nil?
     end
 
-    def update_without_validating_resource!(params)
-      self.do_not_validate_resource = true
-      res = update!(params)
-      self.do_not_validate_resource = false
-      res
-    end
-
-    protected
-    attr_accessor :do_not_validate_resource
 
     private
       def exec_create
         resource_model.create!(params).tap do |created_resource|
-          update_without_validating_resource!(resource_id: created_resource.id)
+          update!(resource_id: created_resource.id)
         end
       end
 
@@ -79,10 +70,6 @@ module Approval
 
       def resource_id_presence_condition?
         (update_event? || destroy_event?) && !destroy_event_perfomed?
-      end
-
-      def ensure_valid_resource_condition?
-        !destroy_event_perfomed? && (create_event? || update_event?) && do_not_validate_resource.blank? 
       end
 
       def destroy_event_perfomed?
