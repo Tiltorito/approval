@@ -6,6 +6,7 @@ module Approval
     EVENTS = %w[create update destroy perform].freeze
 
     after_destroy :destroy_request, if: ->(item) { item.request.items.count.zero? }
+    after_create { resource&.on_approval_created }
 
     belongs_to :request, class_name: :"Approval::Request", inverse_of: :items
     belongs_to :resource, polymorphic: true, optional: true

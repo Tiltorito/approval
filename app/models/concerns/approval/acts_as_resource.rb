@@ -7,6 +7,8 @@ module Approval
       self.approval_ignore_fields = %w[id created_at updated_at]
 
       has_many :approval_items, class_name: :"Approval::Item", as: :resource, dependent: :destroy
+
+      def on_approval_created ; end
     end
 
     class_methods do
